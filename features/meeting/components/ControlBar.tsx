@@ -5,19 +5,29 @@ import { Mic, MicOff, Video, VideoOff, PhoneOff, Globe, MessageSquare, Monitor }
 interface ControlBarProps {
   isMuted: boolean;
   onMuteToggle: () => void;
+  isVideoOff: boolean;
+  onVideoToggle: () => void;
+  isScreenSharing: boolean;
+  onScreenShareToggle: () => void;
   isConnected: boolean;
   isTranslating: boolean;
   onToggleTranslation: () => void;
   onToggleTranscript: () => void;
+  onHangUp: () => void;
 }
 
 export const ControlBar: React.FC<ControlBarProps> = ({
   isMuted,
   onMuteToggle,
+  isVideoOff,
+  onVideoToggle,
+  isScreenSharing,
+  onScreenShareToggle,
   isConnected,
   isTranslating,
   onToggleTranslation,
-  onToggleTranscript
+  onToggleTranscript,
+  onHangUp
 }) => {
   return (
     <div className="bg-gray-900 border-t border-gray-800 p-6 flex items-center justify-between px-12 shadow-2xl">
@@ -31,14 +41,25 @@ export const ControlBar: React.FC<ControlBarProps> = ({
       <div className="flex items-center gap-3">
         <button 
           onClick={onMuteToggle}
+          title={isMuted ? "Unmute" : "Mute"}
           className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${isMuted ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
         >
           {isMuted ? <MicOff size={22} /> : <Mic size={22} />}
         </button>
-        <button className="w-12 h-12 rounded-full bg-gray-800 text-gray-300 flex items-center justify-center hover:bg-gray-700 transition-all">
-          <Video size={22} />
+        
+        <button 
+          onClick={onVideoToggle}
+          title={isVideoOff ? "Turn Video On" : "Turn Video Off"}
+          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${isVideoOff ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
+        >
+          {isVideoOff ? <VideoOff size={22} /> : <Video size={22} />}
         </button>
-        <button className="w-12 h-12 rounded-full bg-gray-800 text-gray-300 flex items-center justify-center hover:bg-gray-700 transition-all">
+
+        <button 
+          onClick={onScreenShareToggle}
+          title={isScreenSharing ? "Stop Sharing" : "Share Screen"}
+          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${isScreenSharing ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
+        >
           <Monitor size={22} />
         </button>
         
@@ -52,7 +73,10 @@ export const ControlBar: React.FC<ControlBarProps> = ({
           {isTranslating ? 'Stop Translation' : 'Start Translation'}
         </button>
 
-        <button className="w-14 h-12 rounded-2xl bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-lg shadow-red-600/20 ml-4">
+        <button 
+          onClick={onHangUp}
+          className="w-14 h-12 rounded-2xl bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-lg shadow-red-600/20 ml-4"
+        >
           <PhoneOff size={22} />
         </button>
       </div>

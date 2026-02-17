@@ -17,31 +17,30 @@ interface MeetingRoomProps {
 export const MeetingRoom: React.FC<MeetingRoomProps> = ({ roomId }) => {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [targetLang, setTargetLang] = useState('English');
   const [showTranscripts, setShowTranscripts] = useState(true);
   const hasInitializedPeer = useRef(false);
+  const screenStreamRef = useRef<MediaStream | null>(null);
 
   const { playChunk, stopAll, init: initAudio } = useAudioPlayer();
   const { startSession, stopSession, sendAudio, isTranslating, transcription } = useLiveTranslation(targetLang);
 
-  // 1. Sinalização com callback estável
   const { send, isConnected } = useSignaling(roomId, useCallback((msg: SignalMessage) => {
     if (msg.type === 'signal') handleSignal(msg.payload);
   }, []));
 
-  // 2. WebRTC com callback de sinalização estável para evitar recriação do initPeer
   const onWebRTCSignal = useCallback((payload: any) => {
     send({ type: 'signal', roomId, payload });
   }, [send, roomId]);
 
   const { initPeer, handleSignal, remoteStream } = useWebRTC(onWebRTCSignal);
 
-  // 3. Audio Pipeline usando o stream local já capturado
   useAudioStream(localStream, !isMuted && isTranslating, (blob) => {
     sendAudio(blob);
   });
 
-  // 4. Captura da Câmera (Roda apenas uma vez no mount)
   useEffect(() => {
     let active = true;
     const startCamera = async () => {
@@ -61,13 +60,56 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({ roomId }) => {
     return () => { active = false; };
   }, []);
 
-  // 5. Inicializa Peer Connection quando o stream E a conexão de sinalização estão prontos
   useEffect(() => {
     if (localStream && isConnected && !hasInitializedPeer.current) {
       initPeer(localStream);
       hasInitializedPeer.current = true;
     }
   }, [localStream, isConnected, initPeer]);
+
+  const handleMuteToggle = () => {
+    if (localStream) {
+      localStream.getAudioTracks().forEach(track => {
+        track.enabled = isMuted; // Toggle enabled state
+      });
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const handleVideoToggle = () => {
+    if (localStream) {
+      localStream.getVideoTracks().forEach(track => {
+        track.enabled = isVideoOff; // Toggle enabled state
+      });
+      setIsVideoOff(!isVideoOff);
+    }
+  };
+
+  const handleScreenShareToggle = async () => {
+    if (isScreenSharing) {
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach(t => t.stop());
+      }
+      setIsScreenSharing(false);
+      // In a full WebRTC impl, we'd swap tracks back to camera here
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        screenStreamRef.current = stream;
+        setIsScreenSharing(true);
+        stream.getVideoTracks()[0].onended = () => setIsScreenSharing(false);
+      } catch (e) {
+        console.error("Screen share denied", e);
+      }
+    }
+  };
+
+  const handleHangUp = () => {
+    if (localStream) {
+      localStream.getTracks().forEach(t => t.stop());
+    }
+    window.location.reload(); // Simple way to reset state for now
+  };
 
   const handleToggleTranslation = async () => {
     if (isTranslating) {
@@ -96,7 +138,12 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({ roomId }) => {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-[400px]">
-              <VideoPanel stream={localStream} name="You (Host)" isLocal />
+              <VideoPanel 
+                stream={isScreenSharing ? screenStreamRef.current : localStream} 
+                name={isScreenSharing ? "You (Screen)" : "You (Host)"} 
+                isLocal 
+                videoOff={isVideoOff && !isScreenSharing}
+              />
               <VideoPanel stream={remoteStream} name="Remote Guest" />
             </div>
             
@@ -123,11 +170,16 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({ roomId }) => {
 
       <ControlBar 
         isMuted={isMuted} 
-        onMuteToggle={() => setIsMuted(!isMuted)} 
+        onMuteToggle={handleMuteToggle} 
+        isVideoOff={isVideoOff}
+        onVideoToggle={handleVideoToggle}
+        isScreenSharing={isScreenSharing}
+        onScreenShareToggle={handleScreenShareToggle}
         isConnected={isConnected}
         isTranslating={isTranslating}
         onToggleTranslation={handleToggleTranslation}
         onToggleTranscript={() => setShowTranscripts(!showTranscripts)}
+        onHangUp={handleHangUp}
       />
     </div>
   );
