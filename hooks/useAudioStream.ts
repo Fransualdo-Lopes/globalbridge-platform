@@ -29,7 +29,8 @@ export const useAudioStream = (stream: MediaStream | null, isActive: boolean, on
       audioCtxRef.current = audioContext;
 
       const source = audioContext.createMediaStreamSource(stream);
-      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      // Latência Crítica: 1024 samples @ 16kHz = ~64ms de buffer local
+      const processor = audioContext.createScriptProcessor(1024, 1, 1);
       processorRef.current = processor;
 
       processor.onaudioprocess = (e) => {

@@ -9,13 +9,16 @@ export const useAudioPlayer = () => {
   const init = useCallback(() => {
     if (!audioCtxRef.current) {
       audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-      nextStartTimeRef.current = audioCtxRef.current.currentTime;
+      nextStartTimeRef.current = 0; // Resetar cursor
     }
   }, []);
 
   const playChunk = useCallback(async (base64Data: string) => {
     if (!audioCtxRef.current) init();
     const ctx = audioCtxRef.current!;
+
+    // Resume context se estiver suspenso (comum em navegadores)
+    if (ctx.state === 'suspended') await ctx.resume();
 
     const binaryString = atob(base64Data);
     const bytes = new Uint8Array(binaryString.length);
@@ -36,12 +39,19 @@ export const useAudioPlayer = () => {
     source.buffer = buffer;
     source.connect(ctx.destination);
     
+    // Agendamento agressivo: Se o tempo agendado ficou no passado, usa o tempo atual
     const startTime = Math.max(nextStartTimeRef.current, ctx.currentTime);
     source.start(startTime);
     nextStartTimeRef.current = startTime + buffer.duration;
     
     sourcesRef.current.add(source);
-    source.onended = () => sourcesRef.current.delete(source);
+    source.onended = () => {
+      sourcesRef.current.delete(source);
+      // Pequena limpeza se a fila estiver vazia e muito tempo tiver passado
+      if (sourcesRef.current.size === 0 && ctx.currentTime > nextStartTimeRef.current + 1) {
+        nextStartTimeRef.current = ctx.currentTime;
+      }
+    };
   }, [init]);
 
   const stopAll = useCallback(() => {

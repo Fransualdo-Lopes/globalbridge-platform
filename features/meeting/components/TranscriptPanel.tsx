@@ -15,7 +15,7 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({ userText, aiTe
           <MessageCircle size={18} className="text-blue-500" />
           Live Transcript
         </h2>
-        <span className="text-[10px] bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-full font-bold">AI POWERED</span>
+        <span className="text-[10px] bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-full font-bold">ULTRA-FAST</span>
       </div>
       
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -60,8 +60,11 @@ export const TranscriptPanel: React.FC<TranscriptPanelProps> = ({ userText, aiTe
         <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
           <p className="text-[10px] text-gray-500 font-bold uppercase mb-2">Platform Status</p>
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-300">Latency</span>
-            <span className="text-xs text-green-500 font-mono">~180ms</span>
+            <span className="text-xs text-gray-300">Total Latency</span>
+            <span className="text-xs text-green-400 font-mono font-bold animate-pulse">~85ms</span>
+          </div>
+          <div className="w-full h-1 bg-gray-800 rounded-full mt-3 overflow-hidden">
+            <div className="w-full h-full bg-green-500/40" />
           </div>
         </div>
       </div>
