@@ -1,5 +1,6 @@
 
 import { useRef, useCallback } from 'react';
+import { ENV } from '../core/config/env';
 
 export const useAudioPlayer = () => {
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -8,8 +9,10 @@ export const useAudioPlayer = () => {
 
   const init = useCallback(() => {
     if (!audioCtxRef.current) {
-      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-      nextStartTimeRef.current = 0; // Resetar cursor
+      audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ 
+        sampleRate: ENV.AUDIO_OUT_RATE 
+      });
+      nextStartTimeRef.current = 0;
     }
   }, []);
 
@@ -17,7 +20,6 @@ export const useAudioPlayer = () => {
     if (!audioCtxRef.current) init();
     const ctx = audioCtxRef.current!;
 
-    // Resume context se estiver suspenso (comum em navegadores)
     if (ctx.state === 'suspended') await ctx.resume();
 
     const binaryString = atob(base64Data);
@@ -28,7 +30,7 @@ export const useAudioPlayer = () => {
 
     const dataInt16 = new Int16Array(bytes.buffer);
     const frameCount = dataInt16.length;
-    const buffer = ctx.createBuffer(1, frameCount, 24000);
+    const buffer = ctx.createBuffer(1, frameCount, ENV.AUDIO_OUT_RATE);
     const channelData = buffer.getChannelData(0);
     
     for (let i = 0; i < frameCount; i++) {
@@ -39,7 +41,6 @@ export const useAudioPlayer = () => {
     source.buffer = buffer;
     source.connect(ctx.destination);
     
-    // Agendamento agressivo: Se o tempo agendado ficou no passado, usa o tempo atual
     const startTime = Math.max(nextStartTimeRef.current, ctx.currentTime);
     source.start(startTime);
     nextStartTimeRef.current = startTime + buffer.duration;
@@ -47,15 +48,13 @@ export const useAudioPlayer = () => {
     sourcesRef.current.add(source);
     source.onended = () => {
       sourcesRef.current.delete(source);
-      // Pequena limpeza se a fila estiver vazia e muito tempo tiver passado
-      if (sourcesRef.current.size === 0 && ctx.currentTime > nextStartTimeRef.current + 1) {
-        nextStartTimeRef.current = ctx.currentTime;
-      }
     };
   }, [init]);
 
   const stopAll = useCallback(() => {
-    sourcesRef.current.forEach(s => s.stop());
+    sourcesRef.current.forEach(s => {
+      try { s.stop(); } catch(e) {}
+    });
     sourcesRef.current.clear();
     nextStartTimeRef.current = 0;
   }, []);

@@ -1,8 +1,8 @@
 {
-  "name": "GlobalBridge - Multilingual Meeting Platform",
-  "description": "A professional real-time video meeting platform with bidirectional speech-to-speech translation, breaking language barriers in global communications.",
   "requestFramePermissions": [
     "camera",
     "microphone"
-  ]
+  ],
+  "name": "",
+  "description": ""
 }

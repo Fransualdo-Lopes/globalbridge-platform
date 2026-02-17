@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { GoogleGenAI, Modality } from '@google/genai';
 import { ENV } from '../core/config/env';
 import { useVoiceProfile } from '../core/context/VoiceProfileContext';
@@ -8,26 +8,30 @@ export const useLiveTranslation = (targetLanguage: string, useClonedProfile: boo
   const [isTranslating, setIsTranslating] = useState(false);
   const [isCloning, setIsCloning] = useState(false);
   const [transcription, setTranscription] = useState({ user: '', ai: '' });
+  
   const sessionPromiseRef = useRef<Promise<any> | null>(null);
   const sessionRef = useRef<any>(null);
   const { profile } = useVoiceProfile();
 
   const startSession = useCallback(async (onAudioData: (base64: string) => void) => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // Identity Enforcement via System Instruction
-    const voiceConstraint = (useClonedProfile && profile.isEnrolled && profile.fingerprint)
-      ? `CLONING REQ: You MUST perfectly mimic this vocal signature: ${profile.fingerprint}. Use the input audio as the primary reference for emotion and prosody.`
-      : "MODE: Generic vocal mimicry of input tone.";
+    const voiceIdentity = (useClonedProfile && profile.isEnrolled)
+      ? `VOCAL IDENTITY CLONE ACTIVE. You must replicate the speaker's acoustic profile: ${profile.fingerprint}. Match their original tone, emotion, and gender exactly.`
+      : "STANDARD MODE. Use a natural, expressive voice for translation.";
 
     const sessionPromise = ai.live.connect({
       model: ENV.MODEL_NAME,
       config: {
         responseModalities: [Modality.AUDIO],
-        systemInstruction: `S2S TRANSLATION ENGINE. 
-        TARGET LANG: ${targetLanguage}. 
-        ${voiceConstraint}
-        Strict: Output PCM audio only. Zero text. Optimize for sub-100ms latency.`,
+        systemInstruction: `You are an ultra-low latency Speech-to-Speech (S2S) translator.
+        TARGET LANGUAGE: ${targetLanguage}.
+        ${voiceIdentity}
+        STRICT RULES:
+        1. Output ONLY raw PCM audio. 
+        2. No introductory text or filler.
+        3. Maintain latency below 100ms. 
+        4. Preserve the speaker's persona and context.`,
         speechConfig: {
           voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } }
         },
@@ -35,35 +39,30 @@ export const useLiveTranslation = (targetLanguage: string, useClonedProfile: boo
         outputAudioTranscription: {}
       },
       callbacks: {
-        onopen: () => {
-          setIsTranslating(true);
-          setIsCloning(useClonedProfile && profile.isEnrolled);
-        },
+        onopen: () => setIsTranslating(true),
         onmessage: async (message) => {
-          if (message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data) {
-            onAudioData(message.serverContent.modelTurn.parts[0].inlineData.data);
+          const audio = (message as any).serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+          if (audio) onAudioData(audio);
+          
+          if ((message as any).serverContent?.inputTranscription) {
+            setTranscription(p => ({ ...p, user: p.user + ' ' + (message as any).serverContent.inputTranscription.text }));
           }
-          if (message.serverContent?.inputTranscription) {
-            setTranscription(prev => ({ ...prev, user: prev.user + ' ' + message.serverContent!.inputTranscription!.text }));
-          }
-          if (message.serverContent?.outputTranscription) {
-            setTranscription(prev => ({ ...prev, ai: prev.ai + ' ' + message.serverContent!.outputTranscription!.text }));
+          if ((message as any).serverContent?.outputTranscription) {
+            setTranscription(p => ({ ...p, ai: p.ai + ' ' + (message as any).serverContent.outputTranscription.text }));
           }
         },
-        onclose: () => {
-          setIsTranslating(false);
-          setIsCloning(false);
-        },
+        onclose: () => setIsTranslating(false),
         onerror: (e) => {
-          console.error('Translation Error:', e);
-          setIsCloning(false);
+          console.error('Gemini S2S Error:', e);
+          setIsTranslating(false);
         }
       }
     });
 
     sessionPromiseRef.current = sessionPromise;
-    sessionRef.current = await sessionPromise;
-    return sessionRef.current;
+    const session = await sessionPromise;
+    sessionRef.current = session;
+    setIsCloning(useClonedProfile && profile.isEnrolled);
   }, [targetLanguage, profile, useClonedProfile]);
 
   const sendAudio = useCallback((blob: Blob) => {
@@ -71,15 +70,13 @@ export const useLiveTranslation = (targetLanguage: string, useClonedProfile: boo
     
     blob.arrayBuffer().then(buffer => {
       const uint8 = new Uint8Array(buffer);
-      // Faster binary-to-base64 conversion for small chunks
       let binary = '';
-      const len = uint8.byteLength;
-      for (let i = 0; i < len; i++) {
+      for (let i = 0; i < uint8.byteLength; i++) {
         binary += String.fromCharCode(uint8[i]);
       }
       const base64 = btoa(binary);
 
-      sessionPromiseRef.current?.then((session) => {
+      sessionPromiseRef.current?.then(session => {
         session.sendRealtimeInput({
           media: { data: base64, mimeType: 'audio/pcm;rate=16000' }
         });
@@ -92,9 +89,9 @@ export const useLiveTranslation = (targetLanguage: string, useClonedProfile: boo
       sessionRef.current.close();
       sessionRef.current = null;
       sessionPromiseRef.current = null;
-      setIsTranslating(false);
-      setIsCloning(false);
     }
+    setIsTranslating(false);
+    setIsCloning(false);
   }, []);
 
   return { startSession, stopSession, sendAudio, isTranslating, isCloning, transcription };

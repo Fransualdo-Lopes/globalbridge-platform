@@ -3,7 +3,6 @@
   "name": "globalbridge-monorepo",
   "private": true,
   "description": "Enterprise-grade real-time multilingual video platform",
-  "packageManager": "pnpm@8.0.0",
   "workspaces": [
     "apps/*",
     "packages/*"

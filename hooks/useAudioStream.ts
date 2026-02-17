@@ -23,13 +23,14 @@ export const useAudioStream = (stream: MediaStream | null, isActive: boolean, on
     if (!stream || !isActive) return;
 
     try {
+      // Fix: Use AUDIO_IN_RATE from ENV as AUDIO_SAMPLE_RATE is not defined in core/config/env.ts
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
-        sampleRate: ENV.AUDIO_SAMPLE_RATE,
+        sampleRate: ENV.AUDIO_IN_RATE,
       });
       audioCtxRef.current = audioContext;
 
       const source = audioContext.createMediaStreamSource(stream);
-      // Ultra-low latency: 1024 samples @ 16kHz = ~64ms buffer delay
+      // Latência Crítica: 1024 samples @ 16kHz = ~64ms de buffer local
       const processor = audioContext.createScriptProcessor(1024, 1, 1);
       processorRef.current = processor;
 
