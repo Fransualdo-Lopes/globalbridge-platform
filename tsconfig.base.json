@@ -1,0 +1,21 @@
+
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@globalbridge/shared-types": ["packages/shared-types/src"],
+      "@globalbridge/config": ["packages/config/src"],
+      "@globalbridge/utils": ["packages/utils/src"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}
