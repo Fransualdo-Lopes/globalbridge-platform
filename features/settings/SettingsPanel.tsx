@@ -119,4 +119,45 @@ export const SettingsPanel: React.FC = () => {
                       <p className="text-sm font-bold">Transcription Feedback</p>
                       <p className="text-[10px] text-gray-500">Exibir texto enquanto traduz</p>
                     </div>
-                    <input type="
+                    <input type="checkbox" defaultChecked className="w-5 h-5 accent-blue-600" />
+                  </div>
+                </div>
+              </section>
+            </div>
+          )}
+
+          {activeSection === 'account' && (
+            <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in">
+              <Shield size={48} className="text-gray-700 mb-4" />
+              <h3 className="text-xl font-bold mb-2">Segurança Corporativa</h3>
+              <p className="text-gray-500 text-sm max-w-xs mx-auto">
+                As políticas de privacidade são gerenciadas pelo seu administrador da organização.
+              </p>
+            </div>
+          )}
+
+          {activeSection === 'network' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-gray-950 rounded-2xl border border-gray-800">
+                  <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">Server Status</p>
+                  <p className="text-sm font-bold text-green-500">Operational</p>
+                </div>
+                <div className="p-4 bg-gray-950 rounded-2xl border border-gray-800">
+                  <p className="text-[10px] text-gray-500 font-bold uppercase mb-1">STUN/TURN</p>
+                  <p className="text-sm font-bold text-blue-500">Active</p>
+                </div>
+              </div>
+              <div className="p-6 bg-red-500/5 border border-red-500/10 rounded-2xl flex items-center gap-4">
+                <AlertCircle className="text-red-500" size={20} />
+                <p className="text-xs text-gray-400">
+                  Detectamos uma conexão via VPN. Isso pode aumentar a latência da tradução em até 150ms.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
