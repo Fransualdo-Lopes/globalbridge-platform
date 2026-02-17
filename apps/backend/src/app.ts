@@ -19,14 +19,16 @@ const app = express();
 const httpServer = createServer(app);
 
 // Middlewares
-app.use(cors());
-app.use(express.json());
+// Fix: Cast middleware results to any to resolve overload resolution errors in certain TypeScript/Express environments
+app.use(cors() as any);
+app.use(express.json() as any);
 
 // Modular Routes
-app.use('/api/v1/auth', AuthRoutes);
-app.use('/api/v1/meetings', MeetingRoutes);
+// Fix: Cast routes to any to ensure compatibility with Express's app.use overloads
+app.use('/api/v1/auth', AuthRoutes as any);
+app.use('/api/v1/meetings', MeetingRoutes as any);
 
 // Global Error Handler
-app.use(ErrorMiddleware);
+app.use(ErrorMiddleware as any);
 
 export { app, httpServer };
