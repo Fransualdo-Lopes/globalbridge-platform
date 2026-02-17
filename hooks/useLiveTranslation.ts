@@ -15,19 +15,19 @@ export const useLiveTranslation = (targetLanguage: string, useClonedProfile: boo
   const startSession = useCallback(async (onAudioData: (base64: string) => void) => {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
     
-    // OPÇÃO DE CLONAGEM: Se o usuário tiver perfil e o toggle estiver ON, injeta o DNA vocal
-    const voiceIdentityConstraint = (useClonedProfile && profile.isEnrolled && profile.fingerprint)
-      ? `VOICE CLONE ACTIVE: Replicate these acoustic features: ${profile.fingerprint}.`
-      : "MODE: Generic mimicry of input tone.";
+    // Identity Enforcement via System Instruction
+    const voiceConstraint = (useClonedProfile && profile.isEnrolled && profile.fingerprint)
+      ? `CLONING REQ: You MUST perfectly mimic this vocal signature: ${profile.fingerprint}. Use the input audio as the primary reference for emotion and prosody.`
+      : "MODE: Generic vocal mimicry of input tone.";
 
     const sessionPromise = ai.live.connect({
       model: ENV.MODEL_NAME,
       config: {
         responseModalities: [Modality.AUDIO],
-        systemInstruction: `S2S TRANSLATOR: Translate to ${targetLanguage}.
-        ${voiceIdentityConstraint}
-        Strict rule: Output only translated audio PCM. No text preamble. Minimize latency.
-        Preserve speaker's emotion and identity accurately.`,
+        systemInstruction: `S2S TRANSLATION ENGINE. 
+        TARGET LANG: ${targetLanguage}. 
+        ${voiceConstraint}
+        Strict: Output PCM audio only. Zero text. Optimize for sub-100ms latency.`,
         speechConfig: {
           voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } }
         },
@@ -55,7 +55,7 @@ export const useLiveTranslation = (targetLanguage: string, useClonedProfile: boo
           setIsCloning(false);
         },
         onerror: (e) => {
-          console.error('S2S Engine Error:', e);
+          console.error('Translation Error:', e);
           setIsCloning(false);
         }
       }
@@ -71,7 +71,7 @@ export const useLiveTranslation = (targetLanguage: string, useClonedProfile: boo
     
     blob.arrayBuffer().then(buffer => {
       const uint8 = new Uint8Array(buffer);
-      // Otimização performance: concatenação rápida para chunks menores
+      // Faster binary-to-base64 conversion for small chunks
       let binary = '';
       const len = uint8.byteLength;
       for (let i = 0; i < len; i++) {

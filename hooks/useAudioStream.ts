@@ -29,7 +29,7 @@ export const useAudioStream = (stream: MediaStream | null, isActive: boolean, on
       audioCtxRef.current = audioContext;
 
       const source = audioContext.createMediaStreamSource(stream);
-      // Latência Crítica: 1024 samples @ 16kHz = ~64ms de buffer local
+      // Ultra-low latency: 1024 samples @ 16kHz = ~64ms buffer delay
       const processor = audioContext.createScriptProcessor(1024, 1, 1);
       processorRef.current = processor;
 

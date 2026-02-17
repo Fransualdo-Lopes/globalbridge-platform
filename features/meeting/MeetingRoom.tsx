@@ -9,7 +9,7 @@ import { VideoPanel } from './components/VideoPanel';
 import { ControlBar } from './components/ControlBar';
 import { LanguageSelector } from './components/LanguageSelector';
 import { TranscriptPanel } from './components/TranscriptPanel';
-import { Cpu, Zap, Radio, ShieldCheck, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Zap, ToggleLeft, ToggleRight, Radio } from 'lucide-react';
 import { useVoiceProfile } from '../../core/context/VoiceProfileContext';
 
 interface MeetingRoomProps {
@@ -23,7 +23,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({ roomId }) => {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [targetLang, setTargetLang] = useState('Spanish');
   const [showTranscripts, setShowTranscripts] = useState(true);
-  const [useClonedProfile, setUseClonedProfile] = useState(true); // Toggle de clonagem
+  const [useClonedProfile, setUseClonedProfile] = useState(true);
   const hasInitializedPeer = useRef(false);
   const screenStreamRef = useRef<MediaStream | null>(null);
 
@@ -166,11 +166,11 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({ roomId }) => {
                 {profile.isEnrolled && (
                   <button 
                     onClick={() => setUseClonedProfile(!useClonedProfile)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${useClonedProfile ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-gray-800/50 border-gray-700 text-gray-500'}`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${useClonedProfile ? 'bg-blue-600/10 border-blue-500/30 text-blue-400' : 'bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-700'}`}
                   >
-                    {useClonedProfile ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
-                    <span className="text-[10px] font-bold uppercase tracking-tighter">
-                      {useClonedProfile ? 'Clonagem Ativa' : 'Voz Genérica'}
+                    {useClonedProfile ? <ToggleRight size={20} className="text-blue-500" /> : <ToggleLeft size={20} />}
+                    <span className="text-[11px] font-bold uppercase tracking-tight">
+                      {useClonedProfile ? 'Clone On' : 'Generic Voice'}
                     </span>
                   </button>
                 )}
@@ -189,30 +189,29 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({ roomId }) => {
             </div>
             
             {isTranslating && (
-              <div className="bg-gradient-to-r from-blue-900/30 to-indigo-900/30 border border-blue-500/40 p-5 rounded-2xl flex items-center justify-between animate-in fade-in slide-in-from-bottom-4 shadow-2xl backdrop-blur-md">
+              <div className="bg-gradient-to-r from-blue-900/40 to-indigo-900/40 border border-blue-500/30 p-5 rounded-2xl flex items-center justify-between animate-in fade-in slide-in-from-bottom-4 shadow-2xl backdrop-blur-xl">
                 <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/30 border border-blue-400/30">
-                    <Zap className="text-white fill-white" size={28} />
+                  <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <Zap className="text-white fill-white" size={24} />
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <p className="text-sm font-black text-white uppercase tracking-tight">S2S Engine v2</p>
-                      <span className="text-[9px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/30 font-bold">
-                        {isCloning ? 'DNA CLONING' : 'DYNAMIC MIMICRY'}
+                      <p className="text-sm font-black text-white uppercase tracking-tight">Real-Time S2S Active</p>
+                      <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${isCloning ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'}`}>
+                        {isCloning ? 'DNA Identity Sync' : 'Dynamic Voice'}
                       </span>
                     </div>
-                    <p className="text-xs text-blue-200 font-medium">Latência de captura otimizada para <span className="text-white">~64ms</span></p>
+                    <p className="text-xs text-blue-200 font-medium">Capture delay: <span className="text-white font-bold">~64ms</span> | Processing: <span className="text-white font-bold">~25ms</span></p>
                   </div>
                 </div>
-                <div className="flex items-end gap-1.5 h-10 px-4">
-                  {[1,2,3,4,5,6,7,8].map(i => (
+                <div className="flex items-end gap-1 px-4">
+                  {[...Array(12)].map((_, i) => (
                     <div 
                       key={i} 
-                      className="w-1.5 bg-blue-500 rounded-full animate-pulse" 
+                      className="w-1 bg-blue-400 rounded-full animate-bounce" 
                       style={{ 
-                        animationDelay: `${i * 100}ms`, 
-                        height: `${Math.random() * 30 + 10}px`,
-                        opacity: 0.4 + (i * 0.08)
+                        animationDuration: `${0.6 + Math.random()}s`,
+                        height: `${Math.random() * 24 + 4}px`
                       }} 
                     />
                   ))}
