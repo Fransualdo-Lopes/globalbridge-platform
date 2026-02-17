@@ -1,21 +1,33 @@
-
 {
-  "name": "globalbridge-monorepo",
+  "name": "globalbridge-platform",
+  "version": "1.0.0",
   "private": true,
-  "description": "Enterprise-grade real-time multilingual video platform",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "description": "Real-time multilingual video platform",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "dev": "npm run dev --workspaces",
-    "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces"
+    "dev": "tsx server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "express": "^5.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "ws": "^8.16.0",
+    "uuid": "^9.0.1",
+    "pino": "^8.19.0",
+    "pino-pretty": "^10.3.1",
+    "@google/genai": "^1.41.0"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
-    "prettier": "^3.0.0",
-    "eslint": "^8.0.0"
+    "tsx": "^4.0.0",
+    "@types/express": "^5.0.0",
+    "@types/ws": "^8.5.10",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.0.0"
   }
 }
