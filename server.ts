@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
@@ -5,6 +6,8 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
 import pino from 'pino';
+// Explicitly import process to ensure the Node.js type definition is used
+import process from 'process';
 
 dotenv.config();
 
@@ -87,6 +90,7 @@ httpServer.listen(PORT, () => {
 });
 
 // Handle graceful shutdown
+// Explicitly use the imported process object which has correctly typed .on and .exit methods
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received. Closing server...');
   httpServer.close(() => {

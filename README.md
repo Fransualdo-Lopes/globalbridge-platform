@@ -4,13 +4,13 @@
 
 GlobalBridge is a high-performance Speech-to-Speech (S2S) translation platform that enables seamless communication across languages in real-time.
 
-### Refactored Architecture
+### Unified Architecture
 
-The project has been migrated from a monorepo to a unified platform architecture for simplicity and lower deployment overhead.
+The project uses a flat architecture for maximum simplicity and lower deployment overhead.
 
-- **Unified Server**: `server.ts` handles both signaling for WebRTC and any necessary API logic.
-- **Frontend Core**: React components in `features/` and `hooks/` manage the meeting experience and AI interactions.
-- **Native AI**: Utilizes Gemini 2.5 Flash Native Audio for ultra-low latency translation.
+- **Backend**: `src/server.ts` handles signaling for WebRTC.
+- **Frontend**: React components in `features/` and `hooks/` manage the meeting experience and AI interactions.
+- **AI**: Utilizes Gemini 2.5 Flash Native Audio for low-latency translation.
 
 ## Getting Started
 
@@ -31,11 +31,11 @@ The project has been migrated from a monorepo to a unified platform architecture
 
 ## Folder Structure
 /
+├── src/            # Backend Server
 ├── core/           # Context and Global Envs
-├── features/       # UI Features (Meeting, Voice Lab, Settings)
-├── hooks/          # React Hooks (Signaling, WebRTC, AI)
-├── server.ts       # Backend Signaling Server
-├── types.ts        # Shared Type Definitions
+├── features/       # UI Features
+├── hooks/          # React Hooks
 ├── App.tsx         # Root Component
 ├── index.tsx       # Entry Point
-└── package.json    # Platform Configuration
+├── package.json    # platform Configuration
+└── types.ts        # Global Definitions
