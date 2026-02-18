@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -10,10 +10,22 @@
     "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "baseUrl": ".",
+    "outDir": "dist",
+    "rootDir": ".",
+    "allowImportingTsExtensions": true,
+    "noEmit": false,
     "paths": {
       "*": ["./*"]
     }
   },
-  "include": ["**/*", "src/**/*"],
-  "exclude": ["node_modules", "dist", "apps", "packages"]
+  "include": [
+    "**/*",
+    "src/server.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "apps",
+    "packages"
+  ]
 }

@@ -1,10 +1,11 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
 import pino from 'pino';
+import process from 'process';
 
 dotenv.config();
 
@@ -16,9 +17,7 @@ const logger = pino({
 });
 
 const app = express();
-// Fix: Cast middleware results to any to resolve overload resolution errors in certain TypeScript/Express environments
 app.use(cors() as any);
-// Fix: Cast middleware results to any to resolve overload resolution errors in certain TypeScript/Express environments
 app.use(express.json() as any);
 
 const httpServer = createServer(app);
@@ -27,7 +26,7 @@ const wss = new WebSocketServer({ server: httpServer, path: '/ws/signaling' });
 const rooms: Map<string, Set<string>> = new Map();
 const connections: Map<string, WebSocket> = new Map();
 
-wss.on('connection', (socket) => {
+wss.on('connection', (socket: WebSocket) => {
   const connectionId = uuidv4();
   connections.set(connectionId, socket);
 
@@ -83,4 +82,12 @@ const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {
   logger.info(`🚀 GlobalBridge Platform ready at http://localhost:${PORT}`);
   logger.info(`📡 Signaling WebSocket enabled at ws://localhost:${PORT}/ws/signaling`);
+});
+
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received. Closing server...');
+  httpServer.close(() => {
+    logger.info('Server closed.');
+    process.exit(0);
+  });
 });
