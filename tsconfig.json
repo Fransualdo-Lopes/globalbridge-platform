@@ -11,16 +11,19 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "baseUrl": ".",
     "outDir": "dist",
-    "rootDir": ".",
-    "allowImportingTsExtensions": true,
     "noEmit": false,
     "paths": {
       "*": ["./*"]
     }
   },
   "include": [
-    "**/*",
-    "src/server.ts"
+    "src/server.ts",
+    "index.tsx",
+    "App.tsx",
+    "core/**/*",
+    "features/**/*",
+    "hooks/**/*",
+    "types.ts"
   ],
   "exclude": [
     "node_modules",
