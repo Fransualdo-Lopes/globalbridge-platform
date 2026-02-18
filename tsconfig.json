@@ -14,6 +14,6 @@
       "*": ["./*"]
     }
   },
-  "include": ["**/*"],
-  "exclude": ["node_modules", "dist", "apps", "packages"]
+  "include": ["**/*", "src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

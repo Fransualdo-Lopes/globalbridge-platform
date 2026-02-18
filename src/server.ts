@@ -24,7 +24,6 @@ app.use(express.json() as any);
 const httpServer = createServer(app);
 const wss = new WebSocketServer({ server: httpServer, path: '/ws/signaling' });
 
-// Signaling logic for real-time WebRTC coordination
 const rooms: Map<string, Set<string>> = new Map();
 const connections: Map<string, WebSocket> = new Map();
 
@@ -84,13 +83,4 @@ const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {
   logger.info(`🚀 GlobalBridge Platform ready at http://localhost:${PORT}`);
   logger.info(`📡 Signaling WebSocket enabled at ws://localhost:${PORT}/ws/signaling`);
-});
-
-// Handle graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received. Closing server...');
-  httpServer.close(() => {
-    logger.info('Server closed.');
-    process.exit(0);
-  });
 });
